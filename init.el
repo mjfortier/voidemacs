@@ -1,12 +1,11 @@
+;; VoidEmacs configuration
 
 (setq inhibit-startup-message t)
-
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
 (set-fringe-mode 10)        ; Give some breathing room
-
- (menu-bar-mode -1)            ; Disable the menu bar
+(menu-bar-mode -1)            ; Disable the menu bar
 
 ;; Set up the visible bell
 (setq visible-bell t)
@@ -15,7 +14,7 @@
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-;; Set backup directory
+;; Configure backups
 (setq
  backup-by-copying t     ; preserves symlinks
  backup-directory-alist  ; store in .saves directory
@@ -50,75 +49,24 @@
 (unless (package-installed-p 'use-package)
    (package-install 'use-package))
 
-(require 'use-package)
+;; (require 'use-package)
 (setq use-package-always-ensure t)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("5f128efd37c6a87cd4ad8e8b7f2afaba425425524a68133ac0efd87291d05874" "02f57ef0a20b7f61adce51445b68b2a7e832648ce2e7efb19d217b6454c1b644" "60ada0ff6b91687f1a04cc17ad04119e59a7542644c7c59fc135909499400ab8" "7a424478cb77a96af2c0f50cfb4e2a88647b3ccca225f8c650ed45b7f50d9525" default))
- '(package-selected-packages
-   '(eglot peep-dired dirvish ranger hydra evil-collection evil-magit magit ripgrep projectile dashboard evil general all-the-icons helpful which-key rainbow-delimiters embark-consult embark orderless marginalia consult vertico-posframe vertico doom-themes doom-modeline command-log-mode use-package)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
 
-;; M-x all-the-icons-install-fonts
-(use-package all-the-icons)
-
-(use-package command-log-mode)
-
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1))
-
-(use-package doom-themes
-  :ensure t
+;; Environment setup (important for conda & direnv)
+;; Note: this needs optimization. Very slow atm.
+(add-to-list 'exec-path "~/.local/bin")
+(use-package exec-path-from-shell
   :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-one t)
+  (setenv "SHELL" "/usr/bin/zsh")
+  (setq exec-path-from-shell-variables '("PATH" "CONDA_HOME"))
+  (exec-path-from-shell-initialize))
 
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (all-the-icons must be installed!)
-  (doom-themes-neotree-config)
-  ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-  (doom-themes-treemacs-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+;; Direnv integration
+(use-package envrc
+  :init (envrc-global-mode))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
-
-(use-package which-key
-  :config
-  (setq which-key-idle-delay 0)
-  (setq which-key-min-display-lines 2)
-  (setq which-key-add-column-padding 3)
-  :init (which-key-mode)
-  :diminish which-key-mode)
-
-(use-package which-key-posframe
-  :config (which-key-posframe-mode)
-  :diminish which-key-posframe-mode
-  :init
-  (setq which-key-posframe-border-width 3)
-  (setq which-key-posframe-parameters '((right-fringe . 30))))
-
-(use-package helpful
-  :bind
-    ([remap describe-key]      . helpful-key)
-    ([remap describe-command]  . helpful-command)
-    ([remap describe-variable] . helpful-variable)
-    ([remap describe-function] . helpful-callable))
 
 (use-package ranger
   :init
@@ -133,33 +81,47 @@
     (setq projectile-project-search-path '("~/projects")))
   (setq projectile-switch-project-action #'projectile-dired))
 
+(use-package python
+  :delight "π "
+  :bind (("M-[" . python-nav-backward-block)
+         ("M-]" . python-nav-forward-block))
+  :preface
+  (defun python-remove-unused-imports()
+    "Removes unused imports and unused variables with autoflake."
+    (interactive)
+    (if (executable-find "autoflake")
+        (progn
+          (shell-command (format "autoflake --remove-all-unused-imports -i %s"
+                                 (shell-quote-argument (buffer-file-name))))
+          (revert-buffer t t t))
+      (warn "python-mode: Cannot find autoflake executable."))))
 
+;; debugger - figure this out later
+;; (use-package dap-mode)
+;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+
+(load "~/.emacs.d/modules/layout.el")
+(load "~/.emacs.d/modules/lsp.el")
 (load "~/.emacs.d/modules/vertico.el")
 (load "~/.emacs.d/modules/consult.el")
 (load "~/.emacs.d/modules/keybinds.el")
 (load "~/.emacs.d/modules/dashboard.el")
 (load "~/.emacs.d/modules/magit.el")
 (load "~/.emacs.d/modules/org.el")
-
-  (void/leader-keys
-   "f"  '(:ignore t :which-key "file")
-   "ff" '(find-file :which-key "find file"))
-
-  (void/leader-keys
-    "p"  '(:ignore t :which-key "project")
-    "pp" '(projectile-switch-project :which-key "switch project")
-    "pf" '(projectile-find-file :which-key "find file")
-    "pg" '(consult-ripgrep :which-key "grep in project"))
-
-  (void/leader-keys
-   "q"  '(:ignore t :which-key "quit")
-   "qq" '(save-buffers-kill-terminal :which-key "quit emacs"))
-
-(use-package eglot)
+(load "~/.emacs.d/modules/which-key.el")
 
 
-;; todo:
-;; treemacs
-;; org mode +roam +agenda
-;; configure consult / embark (whole day task)
-;; further ranger config
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(exec-path-from-shell corfu magit dashboard hydra evil-collection evil general embark-consult consult embark orderless marginalia vertico-posframe vertico projectile ranger helpful which-key-posframe which-key rainbow-delimiters doom-themes doom-modeline)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

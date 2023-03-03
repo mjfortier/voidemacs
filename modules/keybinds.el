@@ -1,14 +1,50 @@
+;; General - allow for leader keys
+
 (use-package general
   :config
   (general-create-definer void/leader-keys
     :keymaps '(normal insert visual emacs)
     :prefix "SPC"
-    :global-prefix "C-SPC")
-  (void/leader-keys
-   "b"  '(:ignore t :which-key "buffers")
-   "bb" '(consult-buffer :which-key "switch buffers")
-   "bs" '(save-buffer :which-key "save buffer")
-   "bk" '(kill-current-buffer :which-key "kill buffer")))
+    :global-prefix "C-SPC"))
+
+;; Leader: buffer commands
+(void/leader-keys
+  "b"  '(:ignore t :which-key "buffers")
+  "bb" '(consult-buffer :which-key "switch buffers")
+  "bs" '(save-buffer :which-key "save buffer")
+  "bk" '(kill-current-buffer :which-key "kill buffer"))
+
+;; Leader: global file commands
+(void/leader-keys
+  "f"  '(:ignore t :which-key "file")
+  "ff" '(find-file :which-key "find file"))
+
+;; Leader: project commands
+(void/leader-keys
+  "p"  '(:ignore t :which-key "project")
+  "pp" '(projectile-switch-project :which-key "switch project")
+  "pf" '(projectile-find-file :which-key "find file")
+  "pg" '(consult-ripgrep :which-key "grep in project"))
+
+;; Leader: quit (and related)
+(void/leader-keys
+  "q"  '(:ignore t :which-key "quit")
+  "qq" '(save-buffers-kill-terminal :which-key "quit emacs"))
+
+(void/leader-keys
+  "w" '(:ignore t :which-key "window")
+  "wu" '(evil-window-up :which-key "nav up")
+  "wU" '(windmove-swap-states-up :which-key "move up")
+  "wn" '(evil-window-left :which-key "nav left")
+  "wN" '(windmove-swap-states-left :which-key "move left")
+  "we" '(evil-window-down :which-key "nav down")
+  "wE" '(windmove-swap-states-down :which-key "move down")
+  "wi" '(evil-window-right :which-key "nav right")
+  "wI" '(windmove-swap-states-right :which-key "move right")
+  "wq" '(evil-window-delete :which-key "close window")
+  "wv" '(evil-window-vnew :which-key "split vertically")
+  "wh" '(evil-window-new :which-key "split horizontally")
+  )
 
 (use-package evil
   :init
