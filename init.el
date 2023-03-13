@@ -476,6 +476,10 @@
            ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
            :clock-in :clock-resume
            :empty-lines 1)
+      ("jt" "Thought / Idea" entry
+           (file+olp+datetree "~/org/Thoughts.org")
+           "* %<%I:%M> - Thought :thought:\n\n%?\n\n"
+           :empty-lines 1)
       ("jm" "Meeting" entry
            (file+olp+datetree "~/org/Meetings.org")
            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
